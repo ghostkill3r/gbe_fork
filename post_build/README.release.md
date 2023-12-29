@@ -417,14 +417,13 @@ These configuration files allow disabling various overlay warnings:
 * `disable_overlay_warning_local_save.txt`: disable the warning for using local save in the overlay
 * `disable_overlay_warning_any.txt`: all the above  
 
-You can make the emu generate new ticket data, and additionally the GC token.  
 Check the exaxmple files in the `steam_settings` folder
 
 ---
 
 ## Auto accept game/lobby invites:
 
-When the overlay is enabled and working, you can bypass it and auto-accept invites (lobby or game) from a list of Steam IDs (STeamID64 format).  
+When the overlay is enabled and working, you can bypass it and auto-accept invites (lobby or game) from a list of Steam IDs (SteamID64 format).  
 The configuration file `auto_accept_invite.txt` allows you to do that, add each SteamID64 on a separate line.  
 
 Check the exaxmple file in the `steam_settings` folder  
