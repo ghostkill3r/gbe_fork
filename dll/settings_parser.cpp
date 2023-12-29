@@ -17,6 +17,8 @@
 
 #include "dll/settings_parser.h"
 
+constexpr static const char * const whitespaces = " \t\r\n";
+
 static void consume_bom(std::ifstream &input)
 {
     int bom[3];
@@ -773,7 +775,6 @@ static void parse_force_branch_name(class Settings *settings_client, Settings *s
         std::string line;
         getline( input, line );
         
-        constexpr const char * const whitespaces = " \t\r\n";
         size_t start = line.find_first_not_of(whitespaces);
         size_t end = line.find_last_not_of(whitespaces);
         line = start == end
@@ -950,6 +951,35 @@ static void parse_build_id(int &build_id, std::string &steam_settings_path)
     int len = Local_Storage::get_file_data(steam_settings_path + "build_id.txt", array_id, sizeof(array_id) - 1);
     if (len > 0) {
         build_id = std::stoi(array_id);
+    }
+}
+
+// auto_accept_invite.txt
+static void parse_auto_accept_invite(class Settings *settings_client, Settings *settings_server)
+{
+    bool warn_forced = false;
+
+    std::string auto_accept_list_path = Local_Storage::get_game_settings_path() + "auto_accept_invite.txt";
+    std::ifstream input( utf8_decode(auto_accept_list_path) );
+    if (input.is_open()) {
+        consume_bom(input);
+        for( std::string line; getline( input, line ); ) {
+                
+            size_t start = line.find_first_not_of(whitespaces);
+            size_t end = line.find_last_not_of(whitespaces);
+            line = start == end
+                ? std::string()
+                : line.substr(start, end - start + 1);
+            
+            if (!line.empty()) {
+                try {
+                    auto friend_id = std::stoull(line);
+                    settings_client->auto_accept_invites.insert((uint64_t)friend_id);
+                    settings_server->auto_accept_invites.insert((uint64_t)friend_id);
+                    PRINT_DEBUG("Auto accepting invitations from user with ID (SteamID64) = " "%" PRIu64 "\n", friend_id);
+                } catch (...) {}
+            }
+        }
     }
 }
 
@@ -1152,6 +1182,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     parse_mods_folder(settings_client, settings_server, local_storage);
 
     load_gamecontroller_settings(settings_client);
+
+    parse_auto_accept_invite(settings_client, settings_server);
 
     *settings_client_out = settings_client;
     *settings_server_out = settings_server;
